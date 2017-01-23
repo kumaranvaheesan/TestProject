@@ -44,10 +44,12 @@
     self.rowsArray = nil;
     self.rowsArray = (NSArray *)nullValuePrunedArray;
 }
+
 -(void)postNotification
 {
     NSDictionary* userInfo = @{@"facts": self};
     NSNotificationCenter* notification = [NSNotificationCenter defaultCenter];
     [notification postNotificationName:@"factsReceivedNotification" object:self userInfo:userInfo];
 }
+
 @end

@@ -9,7 +9,9 @@
 #import "ViewController.h"
 #import "UIImageView+AFNetworking.h"
 
-#define NUMBER_OF_ROWS 1
+#define NUMBER_OF_SECTIONS 1
+#define HEIGHT_OFFSET 10
+
 
 @interface ViewController ()
 
@@ -18,7 +20,11 @@
 @implementation ViewController
 
 - (void)viewDidLoad {
+    
     [super viewDidLoad];
+    
+    self.navigationItem.title = @"Loading..."; //Title text while loading facts from json
+
     UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithTitle:@"Refresh" style:UIBarButtonItemStylePlain target:self action:@selector(refreshFacts)];
     self.navigationItem.rightBarButtonItem = refreshButton;
     
@@ -30,8 +36,10 @@
     [self.view addSubview:self.factsTableView];
    
     [self addTableViewConstraints];
+    
     [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(receiveTestNotification:) name:@"factsReceivedNotification" object:nil];
+    
     [self refreshFacts];
     
 }
@@ -73,17 +81,19 @@
         [self.factsTableView reloadData];
     }
 }
+
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:NO];
     [self.factsTableView reloadData];
 }
+
 #pragma mark tableview delegate methods
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     
-    return 1;
+    return NUMBER_OF_SECTIONS;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -97,7 +107,6 @@
    static NSString *tableViewIdentifier = @"tableViewUniqueIdentifier";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:tableViewIdentifier];
-    UILabel *label = nil;
 
     if (cell == nil)
     {
@@ -125,7 +134,6 @@
         
         __weak UITableViewCell *weakCell = cell;
         
-        
         [cell.imageView setImageWithURLRequest:request
                               placeholderImage:placeholderImage
                                        success:^(NSURLRequest *request, NSHTTPURLResponse *response, UIImage *image) {
@@ -149,12 +157,10 @@
         cell.imageView.image = nil;
         [cell setNeedsLayout];
     }
-    //display cell's image using asynchronous call while displaying this row
+
     [cell layoutIfNeeded];
     return cell;
 }
-    
-    
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
@@ -168,7 +174,7 @@
     CGSize constraint = CGSizeMake(self.view.frame.size.width, 2000.0f);
     CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:18] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
     
-    CGFloat height = MAX(size.height, 44.0f);
-    return height + 10;
+    CGFloat height = MAX(size.height, 60.0f);
+    return height + HEIGHT_OFFSET;
 }
 @end
