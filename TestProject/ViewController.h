@@ -7,8 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "FactsModel.h"
+#import "ServiceCommunicator.h"
+@interface ViewController : UIViewController <UITableViewDelegate, UITableViewDataSource> 
+@property (strong, nonatomic) IBOutlet UITableView *factsTableView;
+@property (strong, nonatomic) NSMutableArray  *tableDataSourceArray;
+@property (strong, nonatomic) NSString  *titleString;
+@property (strong, nonatomic) ServiceCommunicator  *apiService;
+@property (strong, nonatomic) FactsModel  *facts;
 
-@interface ViewController : UIViewController
 
 
 @end
