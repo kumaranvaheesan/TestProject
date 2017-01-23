@@ -16,9 +16,33 @@
         self.factsTitle = jsonObj[@"title"];
         self.rowsArray = jsonObj[@"rows"];
         NSLog(@"rowsarray %@", _rowsArray);
+        [self validateRows];
         [self postNotification];
     }
     return self;
+}
+
+/**
+ This method validates the json results and remove NULL items inside rows array
+ */
+-(void)validateRows
+{
+    NSMutableArray *nullValuePrunedArray = [[NSMutableArray alloc] init];
+    
+    for(NSDictionary *dictionary in self.rowsArray){
+        NSMutableDictionary *nullValuePrunedDictionary = [NSMutableDictionary dictionary];
+        
+        for (NSString * key in [dictionary allKeys])
+        {
+            if (![[dictionary objectForKey:key] isKindOfClass:[NSNull class]])
+                [nullValuePrunedDictionary setObject:[dictionary objectForKey:key] forKey:key];
+            else
+                [nullValuePrunedDictionary setObject:@"No Data Available" forKey:key];
+        }
+        [nullValuePrunedArray addObject:nullValuePrunedDictionary];
+    }
+    self.rowsArray = nil;
+    self.rowsArray = (NSArray *)nullValuePrunedArray;
 }
 -(void)postNotification
 {
