@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "FactsModel.h"
+#import <AFNetworking/AFHTTPRequestOperationManager.h>
+
 @interface ServiceCommunicator : NSObject
 @property (strong,nonatomic) FactsModel *factsModel;
 

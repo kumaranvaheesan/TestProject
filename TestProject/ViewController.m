@@ -24,17 +24,17 @@
     [super viewDidLoad];
     
     self.navigationItem.title = @"Loading..."; //Title text while loading facts from json
-
+    
     UIBarButtonItem *refreshButton = [[UIBarButtonItem alloc] initWithTitle:@"Refresh" style:UIBarButtonItemStylePlain target:self action:@selector(refreshFacts)];
     self.navigationItem.rightBarButtonItem = refreshButton;
     
     self.factsTableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
     self.factsTableView.dataSource = self;
     self.factsTableView.delegate = self;
-   
+    
     self.factsTableView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.factsTableView];
-   
+    
     [self addTableViewConstraints];
     
     [[NSNotificationCenter defaultCenter]
@@ -77,8 +77,11 @@
         NSDictionary* userInfo = notification.userInfo;
         self.facts = (FactsModel*)userInfo[@"facts"];
         NSLog (@"Successfully received test notification! %@", self.facts);
-        self.navigationItem.title = self.facts.factsTitle;
-        [self.factsTableView reloadData];
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            self.navigationItem.title = self.facts.factsTitle;
+            [self.factsTableView reloadData];
+            
+        });
     }
 }
 
@@ -104,10 +107,10 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-   static NSString *tableViewIdentifier = @"tableViewUniqueIdentifier";
+    static NSString *tableViewIdentifier = @"tableViewUniqueIdentifier";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:tableViewIdentifier];
-
+    
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
@@ -124,7 +127,7 @@
         cell.detailTextLabel.text = @"";
     
     cell.detailTextLabel.numberOfLines = 0;
-
+    
     //to fetch and display images for each row
     if([factRow objectForKey:@"imageHref"] != [NSNull null])
     { NSString *urlString = [factRow objectForKey:@"imageHref"];
@@ -157,7 +160,7 @@
         cell.imageView.image = nil;
         [cell setNeedsLayout];
     }
-
+    
     [cell layoutIfNeeded];
     return cell;
 }
@@ -168,7 +171,7 @@
     NSDictionary *factRow = [self.facts.rowsArray objectAtIndex:indexPath.row];
     if([factRow objectForKey:@"description"] != [NSNull null])
         text = [factRow objectForKey:@"description"];
-   
+    
     CGSize constraint = CGSizeMake(self.view.frame.size.width, 2000.0f);
     CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:18] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
     

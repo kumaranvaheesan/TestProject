@@ -14,6 +14,7 @@
 -(id)init {
     
     if ( self = [super init] ) {
+        
         [self fetchFacts: FACTSURL completeBlock:^(FactsModel * data){
             NSLog(@"json fetch completed");
         }];
@@ -21,22 +22,41 @@
     return self;
 }
 
-- (void)fetchFacts:(NSString*)url completeBlock:(void(^)(FactsModel *)) completeBlock
+- (void)fetchFacts:(NSString*)urlString completeBlock:(void(^)(FactsModel *)) completeBlock
 {
-    NSError *error;
-    NSString *urlString = [NSString stringWithContentsOfURL:[NSURL URLWithString: url] encoding:NSISOLatin1StringEncoding error:&error];
     
-    NSData *requestData = [urlString dataUsingEncoding:NSUTF8StringEncoding];
+    NSCharacterSet *set = [NSCharacterSet URLQueryAllowedCharacterSet];
+    NSString *encodedUrlAsString = [urlString stringByAddingPercentEncodingWithAllowedCharacters:set];
     
-    id jsonObj = [NSJSONSerialization JSONObjectWithData:requestData options:kNilOptions error:&error];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
     
-    if (error) {
-        //Error handling
-    } else {
-        self.factsModel = [[FactsModel alloc] init];
-       self.factsModel = [[FactsModel alloc] initWithJson:jsonObj];
-        completeBlock(self.factsModel);
-    }
+    [[session dataTaskWithURL:[NSURL URLWithString:encodedUrlAsString]
+            completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                
+                NSString* string= [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];//  encoding is needed to fix error in parsing json from this webservice
+                
+                NSData* encodedData=[string dataUsingEncoding:NSUTF8StringEncoding];
+                
+                if (!error) {
+                    if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+                        NSError *jsonError;
+                        NSDictionary *jsonResponse = [NSJSONSerialization JSONObjectWithData:encodedData options:0 error:&jsonError];
+                        
+                        if (jsonError) {
+                            // Error Parsing JSON
+                            NSLog(@"eror parsing  %@ ", jsonError.description);
+                        } else {
+                            // Success Parsing JSON
+                            NSLog(@"json - %@",jsonResponse);
+                            self.factsModel = [[FactsModel alloc] init];
+                            self.factsModel = [[FactsModel alloc] initWithJson:jsonResponse];
+                            completeBlock(self.factsModel);
+                        }
+                    }
+                } else {
+                    // Fail
+                    NSLog(@"error : %@", error.description);
+                }
+            }] resume];
 }
-    
 @end
