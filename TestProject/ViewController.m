@@ -25,19 +25,36 @@
     self.factsTableView = [[UITableView alloc] initWithFrame:self.view.bounds style:UITableViewStylePlain];
     self.factsTableView.dataSource = self;
     self.factsTableView.delegate = self;
-    self.factsTableView.estimatedRowHeight = 100; // put max you expect here.
-    self.factsTableView.rowHeight = UITableViewAutomaticDimension;
+   
+    self.factsTableView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.factsTableView];
-    
+   
+    [self addTableViewConstraints];
     [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(receiveTestNotification:) name:@"factsReceivedNotification" object:nil];
     [self refreshFacts];
+    
+}
+
+-(void)addTableViewConstraints
+{
+    
+    /* Leading constaint  */
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.factsTableView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeLeading multiplier:1 constant:0]];
+    /* Trailing constraint  */
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.factsTableView attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTrailing multiplier:1 constant:0]];
+    /* Top constraint */
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.factsTableView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeTop multiplier:1 constant:20]];
+    /* Bottom constraint */
+    [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.factsTableView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+    
 }
 
 -(void)refreshFacts
 {
     self.apiService = nil;
     self.apiService = [[ServiceCommunicator alloc] init];
+    
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -56,7 +73,11 @@
         [self.factsTableView reloadData];
     }
 }
-
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:NO];
+    [self.factsTableView reloadData];
+}
 #pragma mark tableview delegate methods
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -73,10 +94,11 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView
          cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *tableViewIdentifier = @"tableViewUniqueIdentifier";
+   static NSString *tableViewIdentifier = @"tableViewUniqueIdentifier";
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:tableViewIdentifier];
-    
+    UILabel *label = nil;
+
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
@@ -92,7 +114,8 @@
     else
         cell.detailTextLabel.text = @"";
     
-    
+    cell.detailTextLabel.numberOfLines = 0;
+
     //to fetch and display images for each row
     if([factRow objectForKey:@"imageHref"] != [NSNull null])
     { NSString *urlString = [factRow objectForKey:@"imageHref"];
@@ -127,12 +150,25 @@
         [cell setNeedsLayout];
     }
     //display cell's image using asynchronous call while displaying this row
-    
+    [cell layoutIfNeeded];
     return cell;
 }
+    
+    
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return UITableViewAutomaticDimension;
+    NSString *text = @"";
+    NSDictionary *factRow = [self.facts.rowsArray objectAtIndex:indexPath.row];
+    if([factRow objectForKey:@"description"] != [NSNull null])
+        text = [factRow objectForKey:@"description"];
+    else
+      text = @"";
+
+    CGSize constraint = CGSizeMake(self.view.frame.size.width, 2000.0f);
+    CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:18] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+    
+    CGFloat height = MAX(size.height, 44.0f);
+    return height + 10;
 }
 @end
