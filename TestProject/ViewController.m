@@ -168,9 +168,7 @@
     NSDictionary *factRow = [self.facts.rowsArray objectAtIndex:indexPath.row];
     if([factRow objectForKey:@"description"] != [NSNull null])
         text = [factRow objectForKey:@"description"];
-    else
-      text = @"";
-
+   
     CGSize constraint = CGSizeMake(self.view.frame.size.width, 2000.0f);
     CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:18] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
     
